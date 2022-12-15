@@ -4,23 +4,87 @@ lines = [  line.split()  for line in ''.join(file.readlines()).split('\n') ]
 sensors = [ [int(line[2][2:-1]), int(line[3][2:-1])] for line in lines ]
 beacons = [ [int(line[-2][2:-1]), int(line[-1][2:])] for line in lines ]
 
+beaconExistsMegaGrid = [ [ True for y in range(0, 2000+1) ] for x in range(0, 2000+1) ]
+
+
 def taxicab(w,z):
     return sum([abs(a - b) for a,b in zip(w,z)])
 
 
-for x in range(0, 4000000):
-    for y in range(0, 4000000):
-        foundSensor = False
-        for i in range(len(sensors)):
-            sensor = sensors[i]
-            t = taxicab([x,y], sensor)
-            if t <= taxicab(sensor, beacons[i]):
-                foundSensor = True
-                break
-        if not foundSensor:
-            print(x, y)
-            print(x*4000000 + y)
-            break
+megaStep = 2000
+# Megagrid[x, y] = (megaStep*x, megaStep*y)        -- (megaStep*x + megaStep-1, megaStep*y)
+#                       |                               |
+#                  (megaStep*x, megaStep*y + megaStep-1) -- (megaStep*x + megaStep-1, megaStep*y + megaStep-1)
+for my in range(0, megaStep+1):
+    for mx in range(0, megaStep+1):
+        for index in range(len(sensors)):
+            sx, sy = sensors[index]
+            st = taxicab(sensors[index], beacons[index])
+            topLeft = [megaStep*mx, megaStep*my]
+            topRight = [megaStep*mx + megaStep-1, megaStep*my]
+            bottomLeft = [megaStep*mx, megaStep*my + megaStep-1]
+            bottomRight = [megaStep*mx + megaStep-1, megaStep*my + megaStep-1]
+            # Test left side
+            if sx >= megaStep*mx + megaStep-1: # sensor on the right
+                t1 = taxicab([sx,sy], topLeft) # Dist from top left
+                t2 = taxicab([sx,sy], bottomLeft) # Dist from bottom left
+                if st >= t1 >= 2000 and st >= t2 >= 2000:
+                    beaconExistsMegaGrid[mx][my] = False
+                    break
+            # Test right side
+            if sx <= megaStep*mx: # sensor on the left
+                t1 = taxicab([sx,sy], topRight) # Dist from top right
+                t2 = taxicab([sx,sy], bottomRight) # Dist from bottom right
+                if st >= t1 >= 2000 and st >= t2 >= 2000:
+                    beaconExistsMegaGrid[mx][my] = False
+                    break
+            # Test top side
+            if sy >= megaStep*my + megaStep-1: # sensor below
+                t1 = taxicab([sx,sy], topRight)
+                t2 = taxicab([sx,sy], topLeft)
+                if st >= t1 >= 2000 and st >= t2 >= 2000:
+                    beaconExistsMegaGrid[mx][my] = False
+                    break
+            # Test bottom
+            if sy <= megaStep*my: # sensor above
+                t = taxicab([sx,sy], bottomLeft) # Dist from bottom left
+                t = taxicab([sx,sy], bottomRight) # Dist from bottom right
+                if st >= t1 >= 2000 and st >= t2 >= 2000:
+                    beaconExistsMegaGrid[mx][my] = False
+                    break
+        # print('#' if (beaconExistsMegaGrid[mx][my]) else '.', end = '')
+        if (beaconExistsMegaGrid[mx][my]):
+            print(f"Trying sensors at {mx}, {my}")
+            for y in range(my*megaStep, (my+1)*megaStep):
+                for x in range(mx*megaStep, (mx+1)*megaStep):
+                    foundSensor = False
+                    for i in range(len(sensors)):
+                        sensor = sensors[i]
+                        t = taxicab([x,y], sensor)
+                        if t <= taxicab(sensor, beacons[i]):
+                            foundSensor = True
+                            break
+                    if not foundSensor:
+                        print(x*4000000 + y)
+                        break
+
+
+
+
+
+
+# for x in range(0, 4000000):
+#     for y in range(0, 4000000):
+#         foundSensor = False
+#         for i in range(len(sensors)):
+#             sensor = sensors[i]
+#             t = taxicab([x,y], sensor)
+#             if t <= taxicab(sensor, beacons[i]):
+#                 foundSensor = True
+#                 break
+#         if not foundSensor:
+#             print(x*4000000 + y)
+#             break
 
 
 # row = 2000000
@@ -58,7 +122,7 @@ for x in range(0, 4000000):
 #                 # drawCoverage(canBeBeacon)
 #                 markComplete = True
 #                 for cont in canBeBeacon:
-#                     if cont: 
+#                     if cont:
 #                         markComplete = False
 #                         break
 #                 if markComplete:
@@ -88,5 +152,3 @@ for x in range(0, 4000000):
 #     if found:
 #         break
 #     # drawCoverage(canBeBeacon)
-
-    
