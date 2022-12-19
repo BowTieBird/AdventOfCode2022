@@ -64,6 +64,12 @@ def checkLine(start, finish):
         return True
     return False
 
+for sensor, radius in zip(sensors, radii):
+    sx, sy = sensor
+    # print(f"Sensor: {sensor}, radius: {radius}")
+    if (checkLine([sx, sy - radius - 1], [sx + radius + 1, sy]) or checkLine([sx, sy + radius + 1], [sx + radius + 1, sy]) or checkLine([sx - radius - 1, sy], [sx, sy + radius + 1]) or checkLine([sx - radius - 1, sy], [sx, sy - radius - 1])):
+        break
+
 # print(checkLine([2, 18], [10,10]))
 
             # for y in range(sensor[1] - taxicab, sensor[1] + taxicab + 1):
@@ -86,12 +92,6 @@ def checkLine(start, finish):
             #         break
             # if markComplete:
             #     break
-
-for sensor, radius in zip(sensors, radii):
-    sx, sy = sensor
-    # print(f"Sensor: {sensor}, radius: {radius}")
-    if (checkLine([sx, sy - radius - 1], [sx + radius + 1, sy]) or checkLine([sx, sy + radius + 1], [sx + radius + 1, sy]) or checkLine([sx - radius - 1, sy], [sx, sy + radius + 1]) or checkLine([sx - radius - 1, sy], [sx, sy - radius - 1])):
-        break
 
 # def checkPoint(point):
 #     if not (0 <= point[0] <= boundary): return False 
