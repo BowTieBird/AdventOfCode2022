@@ -1,3 +1,5 @@
+from collections import deque
+
 file = open("input.txt")
 
 lines = [  line.split()  for line in ''.join(file.readlines()).split('\n') ]
@@ -10,34 +12,29 @@ for v in valves:
     for w in valves:
         assert (w in tunnels[v]) == (v in tunnels[w])
 
-T = 30 # 30
-
-# Breadth first search to get distance to/from each node.
 d = {}
 for valve in valves:
+    # Breadth first search to get distance to/from each node.
     d[valve] = {valve:0}
-    queue = [ valve ]
+    remaining = [ valve ]
     visited = [ valve ]
-    while len(queue) > 0:
-        # vert = queue.pop(0)
-        vert = queue[0]
-        queue = queue[1:]
+    while len(remaining) > 0:
+        vert = remaining.pop(0)
         for neighbour in tunnels[vert]:
             if neighbour not in visited:
                 d[valve][neighbour] = d[valve][vert] + 1
-                visited.append(vert)
-                queue.append(neighbour)
-
+                visited.append(neighbour)
+                remaining.append(neighbour)
+            else:
+                assert d[valve][neighbour] <= d[valve][vert] + 1
 
 for v in valves:
     for w in valves:
-        print(v, w)
-        print(d[v])
-        print(d[w])
         assert d[v][w] == d[w][v]
 
 def runFrom(pos, t, turned_on, pressure):
     # print(f"Call:   pos: {pos}    t: {t}    turned_on: {turned_on}    pressure {pressure}")
+    global T
     next_possibilities = [next_pos for next_pos, tn in turned_on.items() if not tn and t + d[pos][next_pos] + 1 <= T]
 
     return_path = pos
@@ -56,14 +53,13 @@ def putOnPath(pos, target_pos, steps):
     for new_pos in valves:
         if d[pos][new_pos] == steps and steps + d[new_pos][target_pos] == d[pos][target_pos]:
             return new_pos
-    print(d['QK'][target_pos], d['ZL'][target_pos], d['WH'])
-    print(pos, target_pos, steps)
     assert False
 
 # print(putOnPath('MV', 'XU', 1))
 
 def runElephantFrom(you_pos, elephant_pos, t, turned_on, pressure):
     # print(f"Call:   pos: {pos}    t: {t}    turned_on: {turned_on}    pressure {pressure}")
+    global T
     you_next_possibilities = [next_pos for next_pos, tn in turned_on.items() if not tn and t + d[you_pos][next_pos] + 1 <= T]
     elephant_next_possibilities = [next_pos for next_pos, tn in turned_on.items() if not tn and t + d[elephant_pos][next_pos] + 1 <= T]
 
