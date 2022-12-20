@@ -14,12 +14,12 @@ for _ in range(10):
     for i in range(n):
         j = index_of_x_in_decrypted_list[i]
         assert i == mixed_indices[j]
-        x = encryptedList[i] 
+        x = encryptedList[i]
         assert x == decryptedList[j]
 
         new_j = (j + x)
         while (new_j >= n): new_j -= n-1
-        while (new_j <= 0): new_j += n-1
+        while (new_j < 0): new_j += n-1
 
         del decryptedList[j]
         decryptedList.insert(new_j, x)
@@ -33,18 +33,16 @@ for _ in range(10):
         else:
             for ind in mixed_indices[new_j+1:j+1]:
                 index_of_x_in_decrypted_list[ind] += 1
-        
+
         # for q in range(n):
         #     assert decryptedList[index_of_x_in_decrypted_list[q]] == encryptedList[q]
         #     assert mixed_indices[index_of_x_in_decrypted_list[q]] == q
 
         # print(decryptedList)
-        # print(mixed_indices)
+        # print([outputList[ind] for ind in mixed_indices])
         # print(index_of_x_in_decrypted_list)
         # print()
 zero = decryptedList.index(0)
 grove = [outputList[mixed_indices[(zero + 1000) % n]] , outputList[mixed_indices[(zero + 2000) % n]] , outputList[mixed_indices[(zero + 3000)%n]]]
 print(grove)
 print(sum(grove))
-
-
