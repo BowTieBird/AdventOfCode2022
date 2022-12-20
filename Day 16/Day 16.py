@@ -35,7 +35,7 @@ for v in valves:
 def runFrom(pos, t, turned_on):
     """Run a single person simulation from node pos with time t REMAINING."""
     # print(f"Call:   pos: {pos}    t: {t}    turned_on: {turned_on}")
-    next_possibilities = [next_pos for next_pos, tn in turned_on.items() if not tn and t - d[pos][next_pos] - 1 >= 0]
+    next_possibilities = [next_pos for next_pos, tn in turned_on.items() if not tn and t - d[pos][next_pos] - 1 > 0]
 
     return_path = [pos]
     max_next_pressure = 0
@@ -64,76 +64,61 @@ def runElephantFrom(you_pos, elephant_pos, you_target, elephant_target, t, turne
 
     # Possibility choosing
     if you_target is None:
-        you_next_possibilities = [next_pos for next_pos, tn in turned_on.items() if not tn and t - d[you_pos][next_pos] - 1 >= 0 \
-            and next_pos != elephant_target]
+        you_next_possibilities = [next_pos for next_pos, tn in turned_on.items() if not tn and t - d[you_pos][next_pos] - 1 > 0] + [None]
     else:
+        assert elephant_target is None
         you_next_possibilities = [you_target]
 
     if elephant_target is None:
-        elephant_next_possibilities = [next_pos for next_pos, tn in turned_on.items() if not tn and t - d[elephant_pos][next_pos] - 1 >= 0 \
-            and next_pos != you_target]
+        elephant_next_possibilities = [next_pos for next_pos, tn in turned_on.items() if not tn and t - d[elephant_pos][next_pos] - 1 > 0] + [None]
     else:
         elephant_next_possibilities = [elephant_target]
 
 
     you_return_path = [you_pos]
+    next_you_path = []
     elephant_return_path = [elephant_pos]
+    next_elephant_path = []
     max_next_pressure = 0
-    if len(you_next_possibilities) > 0 and len(elephant_next_possibilities) > 0:
-        for you_next_pos in you_next_possibilities:
-            for elephant_next_pos in elephant_next_possibilities:
-                if you_next_pos == elephant_next_pos:
-                    # Need to fix this
-                    # if len(you_next_possibilities) == len(elephant_next_possibilities) == 1:
-                    #     pass
-                    # else:
-                    continue
+
+    for you_next_pos in you_next_possibilities:
+        for elephant_next_pos in elephant_next_possibilities:
+            next_turned_on = { v:True if v == you_next_pos or v == elephant_next_pos else tn for v, tn in turned_on.items() }
+            if you_next_pos == elephant_next_pos:
+                continue
+            if you_next_pos is None or elephant_next_pos is None:
+                if you_next_pos is None and elephant_next_pos is not None:
+                    next_t =  t - d[elephant_pos][elephant_next_pos] - 1
+                    next_pressure, next_elephant_path = runFrom(elephant_next_pos, next_t, next_turned_on)
+                    next_pressure += flowRates[elephant_next_pos]*next_t
+                elif elephant_next_pos is None and you_next_pos is not None:
+                    next_t =  t - d[you_pos][you_next_pos] - 1
+                    next_pressure, next_you_path = runFrom(you_next_pos, next_t, next_turned_on)
+                    next_pressure += flowRates[you_next_pos]*next_t
+            else:
                 if d[you_pos][you_next_pos] == d[elephant_pos][elephant_next_pos]:
                     next_t =  t - d[you_pos][you_next_pos] - 1
-                    next_turned_on = { v:True if v == you_next_pos or v == elephant_next_pos else tn for v, tn in turned_on.items() }
                     next_pressure, next_you_path, next_elephant_path = runElephantFrom(you_next_pos, elephant_next_pos, None, None, next_t, next_turned_on)
-                    next_pressure += (flowRates[you_next_pos] + flowRates[elephant_next_pos] if you_next_pos != elephant_next_pos else flowRates[you_next_pos])*next_t
+                    next_pressure += (flowRates[you_next_pos] + flowRates[elephant_next_pos])*next_t
                 elif d[you_pos][you_next_pos] < d[elephant_pos][elephant_next_pos]:
-                    next_turned_on = { v:True if v == you_next_pos else tn for v, tn in turned_on.items() }
                     next_t =  t - d[you_pos][you_next_pos] - 1
-                    # TODO: PLACE THE ELEPHANT ON THE WAY TO elephant_next_pos
+                    # PLACE THE ELEPHANT ON THE WAY TO elephant_next_pos
                     elephant_half_pos = putOnPath(elephant_pos, elephant_next_pos, t - next_t)
                     next_pressure, next_you_path, next_elephant_path = runElephantFrom(you_next_pos, elephant_half_pos, None, elephant_next_pos, next_t, next_turned_on)
                     next_pressure += flowRates[you_next_pos]*next_t
                 elif d[you_pos][you_next_pos] > d[elephant_pos][elephant_next_pos]:
-                    next_turned_on = { v:True if v == elephant_next_pos else tn for v, tn in turned_on.items() }
                     next_t =  t - d[elephant_pos][elephant_next_pos] - 1
-                    # TODO: PLACE YOU ON THE WAY TO elephant_next_pos
+                    # PLACE YOU ON THE WAY TO elephant_next_pos
                     you_half_pos = putOnPath(you_pos, you_next_pos, t - next_t)
                     next_pressure, next_you_path, next_elephant_path = runElephantFrom(you_half_pos, elephant_next_pos, you_next_pos, None, next_t, next_turned_on)
                     next_pressure += flowRates[elephant_next_pos]*next_t
                 else:
                     assert False
 
-                if next_pressure > max_next_pressure:
-                    max_next_pressure = next_pressure
-                    # Something fishy going on
-                    you_return_path = [you_pos] + next_you_path
-                    elephant_return_path = [elephant_pos] + next_elephant_path
-    else:
-        if len(you_next_possibilities) > 0:
-            for next_pos in you_next_possibilities:
-                next_turned_on = { v:True if v == next_pos else tn for v, tn in turned_on.items() }
-                next_t =  t - d[you_pos][next_pos] - 1
-                next_pressure, next_you_path = runFrom(next_pos, next_t, next_turned_on)
-                next_pressure += flowRates[next_pos]*next_t
-                if next_pressure > max_next_pressure:
-                    max_next_pressure = next_pressure
-                    you_return_path = [you_pos] + next_you_path
-        elif len(elephant_next_possibilities) > 0:
-            for next_pos in elephant_next_possibilities:
-                next_turned_on = { v:True if v == next_pos else tn for v, tn in turned_on.items() }
-                next_t =  t - d[elephant_pos][next_pos] - 1
-                next_pressure, next_elephant_path = runFrom(next_pos, next_t, next_turned_on)
-                next_pressure += flowRates[next_pos]*next_t
-                if next_pressure > max_next_pressure:
-                    max_next_pressure = next_pressure
-                    elephant_return_path = [elephant_pos] + next_elephant_path
+            if next_pressure > max_next_pressure:
+                max_next_pressure = next_pressure
+                you_return_path = [you_pos] + next_you_path
+                elephant_return_path = [elephant_pos] + next_elephant_path
 
     return max_next_pressure, you_return_path, elephant_return_path
 
