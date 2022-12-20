@@ -3,8 +3,8 @@ file = open("input.txt")
 key = 811589153
 originalList = [int(line) for line in file.readlines()]
 n = len(originalList)
-outputList = [(x*key)   for x in originalList]
-encryptedList =  [(x*key) % n for x in originalList]
+outputList = [(x*key) for x in originalList]
+encryptedList =  [(x*key) % (n-1) for x in originalList]
 
 decryptedList = [x for x in encryptedList]
 index_of_x_in_decrypted_list = [i for i in range(n)]
