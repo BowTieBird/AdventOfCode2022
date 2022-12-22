@@ -7,8 +7,8 @@ blueprints_re = [ p.search(line) for line in file.readlines() ]
 
 def maximiseGeodes(blueprint, robots, resources, t, next_buy=None, collect_resources=False):
     if t == 0:
-        # print(resources)
-        return resources['clay']
+        print(resources)
+        return resources['geode']
 
     ore_robot_cost = int(blueprint.group(2))
     clay_robot_cost = int(blueprint.group(3))
@@ -25,13 +25,13 @@ def maximiseGeodes(blueprint, robots, resources, t, next_buy=None, collect_resou
 
     if next_buy is None:
         # Possible choices for the next buy
-        next_possible_buys = {'ore', 'clay'}
+        next_possible_buys = ['ore', 'clay']
         if robots['clay'] >= 1:
-            next_possible_buys.add('obsidian')
+            next_possible_buys.append('obsidian')
         if robots['obsidian'] >= 1:
-            next_possible_buys.add('geode')
+            next_possible_buys.append('geode')
     else:
-        next_possible_buys = { next_buy }
+        next_possible_buys = [ next_buy ]
 
     # Determine which can be bought immediately
     possible_immediate_buys = set()
