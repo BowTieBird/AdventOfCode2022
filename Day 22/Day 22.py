@@ -3,19 +3,14 @@ import re
 
 lines = ''.join(file.readlines()).split('\n')
 
-maxlen = max([len(line) for line in lines[:-2]])+1
+maxlen = max([len(line) for line in lines[:-2]])+1 # Include a row / column of ' ' for ease
 grid = [ [line[x] if x < len(line) else ' ' for x in range(maxlen)] for line in lines[:-1]]
 instructions_line = lines[-1]
-
-
-# instructions_line = '100L100'
-# pos = [3, 153]
 
 # print(instructions)
 # regexp = re.compile(r'(\d*)([A-Z]\d*)+')
 # instructions = regexp.search(instructions)
-# print(instructions.groups())
-#     # print(g)
+
 i = 0
 dir_instructions = []
 steps_instructions = []
@@ -33,7 +28,7 @@ def printGrid():
 pos = [grid[0].index('.'), 0] # Leftmost top
 directions = [[1,0], [0, 1], [-1, 0], [0, -1]]
 arrows = ['>', 'v', '<', '^']
-ind = 0
+ind = 0 # Right
 direction = [1, 0] # Right
 
 
@@ -67,7 +62,7 @@ for instr_index in range(len(steps_instructions)):
     for _ in range(steps):
         ind = directions.index(direction)
         grid[pos[1]][pos[0]] = arrows[ind]  
-        
+
         x, y = [a+b for a,b in zip(pos, direction)]
         new_direction = None
         if grid[y][x] == ' ':
@@ -77,11 +72,11 @@ for instr_index in range(len(steps_instructions)):
                     y = 150 - y - 1
                     x, new_direction = searchLeft(y) 
                 # 2
-                if 50 <= y < 100:
+                elif 50 <= y < 100:
                     x = 100 + (y-50)
                     y, new_direction = searchUp(x)
                 # 3
-                if 150 <= y < 200:
+                elif 150 <= y < 200:
                     x = 50 + (y-150)
                     y, new_direction = searchUp(x)
             elif direction == [-1, 0]:
@@ -90,11 +85,11 @@ for instr_index in range(len(steps_instructions)):
                     y = 150 - y -1
                     x, new_direction = searchRight(y)
                 # 5
-                if 50 <= y < 100:
+                elif 50 <= y < 100:
                     x = y - 50
                     y, new_direction = searchDown(x)
                 # 6
-                if 150 <= y < 200:
+                elif 150 <= y < 200:
                     x = 50 + (y - 150)
                     y, new_direction = searchDown(x)
             elif direction == [0, 1]:
@@ -103,11 +98,11 @@ for instr_index in range(len(steps_instructions)):
                     x = 100 + x
                     y, new_direction = searchDown(x)   
                 # 3
-                if 50 <= x < 100:
+                elif 50 <= x < 100:
                     y = 150 + (x-50)
                     x, new_direction = searchLeft(y)
                 # 2
-                if 100 <= x < 150:
+                elif 100 <= x < 150:
                     y = 50 + (x-100)
                     x, new_direction = searchLeft(y) 
             elif direction == [0, -1]:
@@ -116,47 +111,31 @@ for instr_index in range(len(steps_instructions)):
                     y = 50 + x
                     x, new_direction = searchRight(y)
                 # 6
-                if 50 <= x < 100:
+                elif 50 <= x < 100:
                     y = 150 + (x-50)
                     x, new_direction = searchRight(y)
                 # 7
-                if 100 <= x < 150:
+                elif 100 <= x < 150:
                     x = x - 100
                     y, new_direction = searchUp(x)           
             assert new_direction is not None
 
-
-
+            # Uncomment for part 1
             # if direction == [1, 0]:
-            #     for _x in range(len(grid[y])):
-            #         if grid[y][_x] in ['.', '#']:
-            #             x = _x
-            #             break
+            #     x, new_direction = searchRight(y)
             # elif direction == [-1, 0]:
-            #     for _x in range(len(grid[y])-1, 0, -1):
-            #         if grid[y][_x] in ['.', '#']:
-            #             x = _x
-            #             break
+            #     x, new_direction = searchLeft(y)
             # elif direction == [0, 1]:
-            #     for _y in range(len(grid)):
-            #         if grid[_y][x] in ['.', '#']:
-            #             y = _y
-            #             break
+            #     y, new_direction = searchDown(x)
             # elif direction == [0, -1]:
-            #     for _y in range(len(grid)-1, 0, -1):
-            #         if grid[_y][x] in ['.', '#']:
-            #             y = _y
-            #             break
+            #     y, new_direction = searchUp(x)
         if grid[y][x] == '#':
             break
         if new_direction is not None:
             direction = new_direction                 
         pos = [x, y]
-        # print(x, y)
     
     # Change direction
-    print(direction)
-    print(steps_instructions[instr_index])
     if instr_index == len(steps_instructions)-1:
         continue
     ind = directions.index(direction)
@@ -171,8 +150,6 @@ for instr_index in range(len(steps_instructions)):
 
 grid[pos[1]][pos[0]] = '@'   
 printGrid()
-print(direction)
-print(pos)
-print(1000 * (1+pos[1]) + 4 * (1+pos[0]) + directions.index(direction))
+print(1000 * (1+pos[1]) + 4 * (1+pos[0]) + directions.index(direction)) #103134
 
 
